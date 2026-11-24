@@ -1,0 +1,16 @@
+services:
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+
+  web:
+    build: ./app
+    image: visitor-counter:1.0
+    ports:
+      - "5000:5000"
+    environment:
+      REDIS_HOST: redis
+      CLUSTER_NAME: docker-compose
+    depends_on:
+      - redis
+    restart: unless-stopped

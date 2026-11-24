@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Cloud Computing Project Submission - Visitor Counter</title>
+<style>
+  @page {
+    size: A4;
+    margin: 20mm;
+  }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    color: #1e293b;
+    line-height: 1.6;
+    margin: 0;
+    padding: 30px;
+    background: #f8fafc;
+  }
+  .container {
+    max-width: 900px;
+    margin: 0 auto;
+    background: #ffffff;
+    padding: 40px 50px;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  }
+  h1 {
+    font-size: 26px;
+    color: #0f172a;
+    border-bottom: 3px solid #3b82f6;
+    padding-bottom: 12px;
+    margin-top: 0;
+  }
+  h2 {
+    font-size: 20px;
+    color: #1e3a8a;
+    margin-top: 35px;
+    border-bottom: 1px solid #e2e8f0;
+    padding-bottom: 8px;
+    page-break-after: avoid;
+  }
+  h3 {
+    font-size: 16px;
+    color: #334155;
+    margin-top: 20px;
+  }
+  .meta-box {
+    background: #eff6ff;
+    border-left: 5px solid #3b82f6;
+    padding: 16px 20px;
+    margin: 20px 0;
+    border-radius: 0 8px 8px 0;
+  }
+  .meta-item {
+    margin: 6px 0;
+    font-size: 15px;
+  }
+  .meta-label {
+    font-weight: 700;
+    color: #1e40af;
+  }
+  .highlight-badge {
+    display: inline-block;
+    background: #2563eb;
+    color: white;
+    padding: 3px 10px;
+    border-radius: 4px;
+    font-weight: 600;
+    text-decoration: none;
+  }
+  .screenshot {
+    width: 100%;
+    border-radius: 8px;
+    border: 1px solid #cbd5e1;
+    margin: 15px 0 25px 0;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+    display: block;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+    font-size: 14px;
+  }
+  th, td {
+    border: 1px solid #cbd5e1;
+    padding: 10px 14px;
+    text-align: left;
+  }
+  th {
+    background: #f1f5f9;
+    color: #0f172a;
+    font-weight: 700;
+  }
+  tr:nth-child(even) {
+    background: #f8fafc;
+  }
+  .saving {
+    font-weight: 700;
+    color: #16a34a;
+  }
+  .notice {
+    background: #fefce8;
+    border-left: 5px solid #eab308;
+    padding: 12px 18px;
+    margin: 15px 0;
+    border-radius: 0 6px 6px 0;
+    font-size: 14px;
+  }
+  @media print {
+    body { background: white; padding: 0; }
+    .container { box-shadow: none; padding: 0; max-width: 100%; }
+    .screenshot { page-break-inside: avoid; }
+    h2 { page-break-after: avoid; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <h1>Project Submission Report: Cloud Computing</h1>
+  <p style="font-size: 16px; color: #475569; margin-top: -5px;">
+    <strong>Visitor Counter Web Application (Flask + Redis) on Kubernetes</strong>
+  </p>
+
+  <div class="meta-box">
+    <div class="meta-item"><span class="meta-label">Author:</span> Shruti Jha</div>
+    <div class="meta-item"><span class="meta-label">GitHub Profile:</span> <a href="https://github.com/Shrutijha-cs28" target="_blank">https://github.com/Shrutijha-cs28</a></div>
+    <div class="meta-item"><span class="meta-label">Public Repository Link:</span> <a class="highlight-badge" href="https://github.com/Shrutijha-cs28/visitor-counter" target="_blank">https://github.com/Shrutijha-cs28/visitor-counter</a></div>
+    <div class="meta-item"><span class="meta-label">Technology Stack:</span> Docker, Kubernetes (Minikube / Kind), Python Flask, Redis, HPA, NGINX Load Balancer</div>
+  </div>
+
+  <h2>1. System Architecture</h2>
+  <p>The system deploys a high-availability visitor counter microservice spanning two Kubernetes clusters (Private + Simulated Public) with an edge NGINX reverse proxy front-door providing zero-downtime automated failover.</p>
+  <img class="screenshot" src="docs/screenshots/architecture-diagram.png" alt="Architecture Diagram">
+
+  <h2>2. Task 1: Containerization & Docker Compose</h2>
+  <p>The web service is containerized via a multi-stage Dockerfile and deployed alongside a Redis Alpine datastore using Docker Compose. Tests confirm atomical count increments via <code>curl http://localhost:5000/</code>.</p>
+  <img class="screenshot" src="docs/screenshots/task1-docker-compose.png" alt="Task 1 Verification Screenshot">
+
+  <h2>3. Task 2: Kubernetes Deployment & Self-Healing</h2>
+  <p>The workload runs as a 2-replica Deployment configured with CPU/Memory requests and limits, a readiness probe (<code>/ready</code>), and a liveness probe (<code>/health</code>). Deleting a web pod demonstrates automatic self-healing as the ReplicaSet controller launches an immediate replacement pod.</p>
+  <img class="screenshot" src="docs/screenshots/task2-k8s-self-healing.png" alt="Task 2 Verification Screenshot">
+
+  <h2>4. Task 3: Horizontal Pod Autoscaler (HPA)</h2>
+  <p>A Horizontal Pod Autoscaler is configured with <code>minReplicas: 2</code>, <code>maxReplicas: 6</code>, and <code>targetCPUUtilization: 50%</code>. Under synthetic HTTP traffic load, CPU utilization surges, causing the deployment to automatically scale from 2 up to 6 pods.</p>
+  <img class="screenshot" src="docs/screenshots/task3-hpa-scaling.png" alt="Task 3 Verification Screenshot">
+
+  <h2>5. Task 4: Hybrid Cloud Deployment & Failover</h2>
+  <div class="notice">
+    <strong>Hybrid Cloud Simulation Declaration:</strong> In accordance with the assignment guidelines, the hybrid cloud environment was simulated locally on the machine using two isolated Kubernetes clusters (<code>private-cluster</code> and <code>public-cluster</code>) created via Minikube profiles / kind. No paid cloud resources were consumed.
+  </div>
+  <p>Traffic is initially routed to <code>private-cluster</code>. When the private cluster is stopped, NGINX transparently fails over to <code>public-cluster</code> with zero downtime.</p>
+  <img class="screenshot" src="docs/screenshots/task4-hybrid-failover.png" alt="Task 4 Verification Screenshot">
+
+  <h2>6. Task 5: Cost Optimization Analysis (Measured Before/After)</h2>
+  <p>Three distinct cloud cost optimization techniques were applied, measured, and benchmarked:</p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Optimization Technique</th>
+        <th>Evaluated Metric</th>
+        <th>Baseline (Before)</th>
+        <th>Optimized (After)</th>
+        <th>Measured Improvement</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>1. Image Size Reduction</strong></td>
+        <td>Container Image Size</td>
+        <td>1,020 MB (Python 3.12)</td>
+        <td>142 MB (Multi-stage slim)</td>
+        <td class="saving">86.1% reduction</td>
+      </tr>
+      <tr>
+        <td><strong>2. Resource Right-Sizing</strong></td>
+        <td>CPU / Memory per Pod</td>
+        <td>500m / 512Mi</td>
+        <td>100m / 64Mi</td>
+        <td class="saving">80% CPU / 87.5% RAM</td>
+      </tr>
+      <tr>
+        <td><strong>3. Elastic Autoscaling</strong></td>
+        <td>Active Replicas (Idle)</td>
+        <td>6 static replicas</td>
+        <td>2 dynamic replicas</td>
+        <td class="saving">66.7% capacity saved</td>
+      </tr>
+      <tr>
+        <td><strong>Autoscaling (Weighted)</strong></td>
+        <td>Active Replicas (Day avg)</td>
+        <td>6 static replicas</td>
+        <td>2.4 weighted replicas</td>
+        <td class="saving">60.0% capacity saved</td>
+      </tr>
+      <tr style="background: #ecfdf5;">
+        <td><strong>Combined Financial Result</strong></td>
+        <td><strong>Est. Monthly Cost</strong></td>
+        <td><strong>$98.55 / month</strong></td>
+        <td><strong>$7.56 / month</strong></td>
+        <td class="saving" style="font-size: 15px;">92.3% Total Cost Reduction</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <img class="screenshot" src="docs/screenshots/task5-cost-optimization.png" alt="Task 5 Verification Screenshot">
+
+</div>
+</body>
+</html>
